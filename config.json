@@ -1,0 +1,10 @@
+{
+    "token": "x",
+    "serverID": "x",
+    "prefix": ",",
+    "colorRoles": {
+        "color1": "RoleID",
+        "color2": "RoleID"
+    },
+    "vipRole": "vipRoleID"
+}
