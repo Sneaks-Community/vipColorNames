@@ -12,12 +12,17 @@ bot.on('message', async message => {
     const args = message.content.slice(prefix.length).split(/ +/)
     const command = args.shift().toLowerCase()
     if (!message.content.startsWith(prefix)) return;
+    
     if (command === 'color' || command === 'colors') {
         if (!message.member.roles.cache.has(config.vipRole) && !message.member.roles.cache.has(config.boostRole)) {
             const embed = {
                 "description": "Sorry, this command is for VIPs and Nitro Boosters only. To get vip today visit [here](https://www.snksrv.com/donate).",
                 "color": 299410,
-                "timestamp": Date.now()
+                "timestamp": Date.now(),
+                "footer": {
+                    "icon_url": message.guild.member("134088598684303360").user.avatarURL(),
+                    "text": "Made by Frumpy#0072"
+                  }
             };
             message.channel.send(message.member,{
                 embed: embed
