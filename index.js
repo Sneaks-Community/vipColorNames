@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const bot = new Discord.Client();
 const config = require('./config.json');
-var colorRoles = {}
+var colorRoles = []
 bot.on('ready', () => {
     console.log(`Logged in as ${bot.user.tag}!`);
     bot.user.setActivity(`Use ${config.prefix}color!`)
@@ -36,8 +36,8 @@ bot.on('message', async message => {
             function rolesToString() {
                 var list = '0: Reset Color\n';
                 var num = 1
-                Object.keys(colorRoles).forEach(i => {
-                    list += (num + ": " + message.guild.roles.cache.get(colorRoles[i]).toString() + "\n")
+                colorRoles.forEach(i => {
+                    list += (num + ": " + message.guild.roles.cache.get(i).toString() + "\n")
                     num++
                 })
                 return list;
@@ -55,7 +55,7 @@ bot.on('message', async message => {
             })
             return;
         } else {
-            if (isNaN(args[0]) || (Number(args[0]) > Object.keys(colorRoles).length)) {
+            if (isNaN(args[0]) || (Number(args[0]) > colorRoles.length)) {
                 message.delete()
                 message.channel.send(`Please enter a valid number. To list the color choices do \`${config.prefix}colors\``).then(m => {
                     m.delete({timeout: 5000})
@@ -63,8 +63,8 @@ bot.on('message', async message => {
                 return;
             }
             var memberRoles = Array.from(message.member.roles.cache.keys())
-            var cRoles = Object.values(colorRoles)
-            var addRole = colorRoles[Object.keys(colorRoles)[Number(args[0]) - 1]]
+            var cRoles = colorRoles;
+            var addRole = colorRoles[Number(args[0]) - 1]
             if (memberRoles.includes(addRole)) {
                 message.react("👌")
                 return;
@@ -95,7 +95,7 @@ bot.on('message', async message => {
 bot.on("guildMemberUpdate", (o, n) => {
     let check1 = o.roles.cache.has(config.vipRole) || o.roles.cache.has(config.boostRole);
     let check2 = !n.roles.cache.has(config.vipRole) && !n.roles.cache.has(config.boostRole);
-    let ids = Object.values(colorRoles);
+    let ids = colorRoles;
     
     if(check1 && check2){
         
