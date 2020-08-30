@@ -51,7 +51,8 @@ bot.on('message', async message => {
             message.channel.send({
                 embed: colorList
             }).then(m => {
-                m.delete({timeout: 8000})
+				message.delete()
+                m.delete({timeout: 20000})
             })
             return;
         } else {
