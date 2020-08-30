@@ -8,7 +8,7 @@ bot.on('ready', () => {
     colorRoles = config.colorRoles//fills global object
 });
 bot.on('message', async message => {
-    
+
     const prefix = config.prefix
     const args = message.content.slice(prefix.length).split(/ +/)
     const command = args.shift().toLowerCase()
@@ -72,7 +72,7 @@ bot.on('message', async message => {
             var cRoles = Object.values(colorRoles)//Makes array of colorRole IDs
             var addRole = colorRoles[Object.keys(colorRoles)[Number(args[0]) - 1]]//Picks role out of colorRoles array depending on input
             if (memberRoles.includes(addRole)) {
-                message.react(message.guild.emojis.cache.get("749758707893665842"))//easteregg
+                message.react(message.guild.emojis.cache.get("718604767022022666"))//easteregg
                 return;
             }
             cRoles.forEach(r => {//when new color is selected it removes the rest of the colorRoles
@@ -97,6 +97,49 @@ bot.on('message', async message => {
         }
     }
 });
+
+//Admin commands
+
+bot.on("message", async message => {//requires ops team role
+    const prefix = config.prefix
+    const args = message.content.slice(prefix.length).split(/ +/)
+    const command = args.shift().toLowerCase()
+    if (!message.content.startsWith(prefix)) return;
+    //if(!message.member.roles.cache.has("490757099534548995")) return;
+
+    if(command == "id"){
+        message.channel.send(message.guild.emojis.cache.get("718604767022022666") || "OK").then(m => {
+            m.edit(m.id);
+        })
+    }
+
+    if(command == "updatepin"){
+        function rolesToString() {//makes a list of all the colorRoles with a corresponding number
+            var list = '0: Reset Color\n';
+            var num = 1
+            Object.keys(colorRoles).forEach(i => {
+                list += (num + ": " + message.guild.roles.cache.get(colorRoles[i]).toString() + "\n")
+                num++
+            })
+            return list;
+        }
+        var roleString = await rolesToString()
+        const colorList = {
+            "description": `Please select a color from the list below.\n\n${roleString}\nTo set a color please use \`${config.prefix}color <Color Number>\``,
+            "color": 299410,
+            "timestamp": Date.now()
+        };
+        message.channel.send({
+            embed: colorList
+        }).then(m => {
+            if(args[0]) message.channel.messages.fetch(args[0]).then(oldM => oldM.unpin());
+            message.delete();
+            m.pin();
+        })
+    }
+
+
+})
 
 bot.on("guildMemberUpdate", (o, n) => {//Removes roles if you dont have any allowedRoles
     
