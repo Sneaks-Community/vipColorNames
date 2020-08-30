@@ -14,7 +14,7 @@ bot.on('message', async message => {
     if (!message.content.startsWith(prefix)) return;
     
     if (command === 'color' || command === 'colors') {
-        if (!message.member.roles.cache.has(config.vipRole) && !message.member.roles.cache.has(config.boostRole)) {
+            if(!config.allowedRoles.some(r => message.member.roles.cache.has(r))) {
             const embed = {
                 "description": "Sorry, this command is for VIPs and Nitro Boosters only. To get vip today visit [here](https://www.snksrv.com/donate).",
                 "color": 299410,
@@ -93,8 +93,12 @@ bot.on('message', async message => {
 });
 
 bot.on("guildMemberUpdate", (o, n) => {
-    let check1 = o.roles.cache.has(config.vipRole) || o.roles.cache.has(config.boostRole);
-    let check2 = !n.roles.cache.has(config.vipRole) && !n.roles.cache.has(config.boostRole);
+    
+    let check1 = config.allowedRoles.some(r => o.roles.cache.has(r));
+    
+    
+    let check2 = !config.allowedRoles.some(r => n.roles.cache.has(r));
+    
     let ids = Object.values(colorRoles);
     
     if(check1 && check2){
