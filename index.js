@@ -1,20 +1,21 @@
 const Discord = require('discord.js');
 const bot = new Discord.Client();
 const config = require('./config.json');
-var colorRoles = {}
+var colorRoles = {}//makes global object
 bot.on('ready', () => {
     console.log(`Logged in as ${bot.user.tag}!`);
     bot.user.setActivity(`Use ${config.prefix}color!`)
-    colorRoles = config.colorRoles
+    colorRoles = config.colorRoles//fills global object
 });
 bot.on('message', async message => {
+    
     const prefix = config.prefix
     const args = message.content.slice(prefix.length).split(/ +/)
     const command = args.shift().toLowerCase()
     if (!message.content.startsWith(prefix)) return;
     
     if (command === 'color' || command === 'colors') {
-            if(!config.allowedRoles.some(r => message.member.roles.cache.has(r))) {
+            if(!config.allowedRoles.some(r => message.member.roles.cache.has(r))) {//if you dont have any allowedRoles 
             const embed = {
                 "description": "Sorry, this command is for VIPs and Nitro Boosters only. To get vip today visit [here](https://www.snksrv.com/donate).",
                 "color": 299410,
@@ -33,7 +34,7 @@ bot.on('message', async message => {
             return;
         }
         if (args.length === 0) {
-            function rolesToString() {
+            function rolesToString() {//makes a list of all the colorRoles with a corresponding number
                 var list = '0: Reset Color\n';
                 var num = 1
                 Object.keys(colorRoles).forEach(i => {
@@ -60,21 +61,21 @@ bot.on('message', async message => {
             })
             return;
         } else {
-            if (isNaN(args[0]) || (Number(args[0]) > Object.keys(colorRoles).length)) {
+            if (isNaN(args[0]) || (Number(args[0]) > Object.keys(colorRoles).length)) {//checks if invalid number or no number
                 message.delete()
                 message.channel.send(`Please enter a valid number. To list the color choices do \`${config.prefix}colors\``).then(m => {
                     m.delete({timeout: 5000})
                 })
                 return;
             }
-            var memberRoles = Array.from(message.member.roles.cache.keys())
-            var cRoles = Object.values(colorRoles)
-            var addRole = colorRoles[Object.keys(colorRoles)[Number(args[0]) - 1]]
+            var memberRoles = Array.from(message.member.roles.cache.keys())//Makes array of members role IDs
+            var cRoles = Object.values(colorRoles)//Makes array of colorRole IDs
+            var addRole = colorRoles[Object.keys(colorRoles)[Number(args[0]) - 1]]//Picks role out of colorRoles array depending on input
             if (memberRoles.includes(addRole)) {
-                message.react("👌")
+                message.react(message.guild.emojis.cache.get("749758707893665842"))//easteregg
                 return;
             }
-            cRoles.forEach(r => {
+            cRoles.forEach(r => {//when new color is selected it removes the rest of the colorRoles
                 r = message.guild.roles.cache.get(r)
                 if (memberRoles.includes(r.id)) {
                     message.member.roles.remove(r.id)
@@ -97,16 +98,16 @@ bot.on('message', async message => {
     }
 });
 
-bot.on("guildMemberUpdate", (o, n) => {
+bot.on("guildMemberUpdate", (o, n) => {//Removes roles if you dont have any allowedRoles
     
-    let check1 = config.allowedRoles.some(r => o.roles.cache.has(r));
+    let check1 = config.allowedRoles.some(r => o.roles.cache.has(r));//checks if old member had any of the allowedRoles
     
     
-    let check2 = !config.allowedRoles.some(r => n.roles.cache.has(r));
+    let check2 = !config.allowedRoles.some(r => n.roles.cache.has(r));//checks if new member doesnt have any of the allowedRoles.
     
     let ids = Object.values(colorRoles);
     
-    if(check1 && check2){
+    if(check1 && check2){//check if both checks are true
         
             n.roles.cache.array().map(r => r.id).forEach(r => {
             if(ids.includes(r)){
