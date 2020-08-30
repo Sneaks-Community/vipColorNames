@@ -46,7 +46,11 @@ bot.on('message', async message => {
             const colorList = {
                 "description": `Please select a color from the list below.\n\n${roleString}\nTo set a color please use \`${config.prefix}color <Color Number>\``,
                 "color": 299410,
-                "timestamp": Date.now()
+                "timestamp": Date.now(),
+		"footer": {
+                    "icon_url": message.guild.member("134088598684303360").user.avatarURL(),
+                    "text": "Made by Frumpy#0072"
+                  }
             };
             message.channel.send({
                 embed: colorList
