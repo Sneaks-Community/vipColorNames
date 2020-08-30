@@ -2,7 +2,10 @@
     "token": "x",
     "serverID": "x",
     "prefix": ",",
-    "colorRoles": ["x", "y"],
+    "colorRoles": {//X is replaced with role id
+        "color1": "x",
+        "color2": "x"
+    },
     "vipRole": "x",
     "boostRole": "x"
 }
