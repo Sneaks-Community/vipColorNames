@@ -105,7 +105,7 @@ bot.on("message", async message => {//requires ops team role
     const args = message.content.slice(prefix.length).split(/ +/)
     const command = args.shift().toLowerCase()
     if (!message.content.startsWith(prefix)) return;
-    //if(!message.member.roles.cache.has("490757099534548995")) return;
+    if(!message.member.roles.cache.has("490757099534548995")) return;
 
     if(command == "id"){
         message.channel.send(message.guild.emojis.cache.get("718604767022022666") || "OK").then(m => {
