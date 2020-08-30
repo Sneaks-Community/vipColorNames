@@ -44,7 +44,7 @@ bot.on('message', async message => {
             }
             var roleString = await rolesToString()
             const colorList = {
-                "description": `Please select a color from the list below.\n\n${roleString}\nTo set a color please use \`${config.prefix}color <Color>\``,
+                "description": `Please select a color from the list below.\n\n${roleString}\nTo set a color please use \`${config.prefix}color <Color Number>\``,
                 "color": 299410,
                 "timestamp": Date.now()
             };
