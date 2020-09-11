@@ -17,7 +17,7 @@ bot.on('message', async message => {
     const command = args.shift().toLowerCase()
     if (!message.content.startsWith(prefix)) return;
 
-    if (command === 'color' || command === 'colors' || command == "colour") {
+    if (command === 'color' || command === 'colors' || command == "colour" || command == "colours") {
         if (!config.allowedRoles.some(r => message.member.roles.cache.has(r))) {//if you dont have any allowedRoles 
             const embed = {
                 "description": "Sorry, this command is for VIPs and Nitro Boosters only. To get vip today visit [here](https://www.snksrv.com/donate).",
