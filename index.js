@@ -1,16 +1,17 @@
-const Discord = require('discord.js');
-const bot = new Discord.Client();
-const config = require('./config.json');
-var colorRoles = {}//makes global object
+const { Client, Intents } = require("discord.js");
+const bot = new Client({ intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
+const config = require("./config.json");
+var colorRoles = {}; //makes global object
 
-const version = 1.42
+// const version = require('./package.json').version;
 
-bot.on('ready', () => {
-    console.log(`Logged in as ${bot.user.tag}!`);
-    bot.user.setActivity(`Use ${config.prefix}color!`)
-    colorRoles = config.colorRoles//fills global object
+bot.on("ready", () => {
+	console.log(`Logged in as ${bot.user.tag}!`);
+	bot.user.setActivity(`Use ${config.prefix}color!`);
+	colorRoles = config.colorRoles; //fills global object
 });
-bot.on('message', async message => {
+bot.on('messageCreate', async message => {
+    console.log("message")
 
     const prefix = config.prefix
     const args = message.content.slice(prefix.length).split(/ +/)
@@ -18,7 +19,7 @@ bot.on('message', async message => {
     if (!message.content.startsWith(prefix)) return;
 
     if (command === 'color' || command === 'colors' || command == "colour" || command == "colours") {
-        if (!config.allowedRoles.some(r => message.member.roles.cache.has(r))) {//if you dont have any allowedRoles 
+        if (!config.allowedRoles.some(r => message.member.roles.cache.has(r))) {//if you dont have any allowedRoles
             const embed = {
                 "description": "Sorry, this command is for VIPs and Nitro Boosters only. To get vip today visit [here](https://www.snksrv.com/donate).",
                 "color": 299410,
@@ -29,7 +30,7 @@ bot.on('message', async message => {
                 }
             };
             message.channel.send(message.member, {
-                embed: embed
+                embeds: [embed]
             }).then(m => {
                 message.delete({ timeout: 5000 });
                 m.delete({ timeout: 5000 })
@@ -57,7 +58,7 @@ bot.on('message', async message => {
                 }
             };
             message.channel.send({
-                embed: colorList
+                embeds: [colorList]
             }).then(m => {
                 message.delete()
                 m.delete({ timeout: 20000 })
@@ -104,7 +105,7 @@ bot.on('message', async message => {
 
 //Admin commands
 
-bot.on("message", async message => {//requires ops team role
+bot.on("messageCreate", async message => {//requires ops team role
     const prefix = config.prefix
     const args = message.content.slice(prefix.length).split(/ +/)
     const command = args.shift().toLowerCase()
@@ -138,7 +139,7 @@ bot.on("message", async message => {//requires ops team role
             }
         };
         message.channel.send({
-            embed: colorList
+            embeds: [colorList]
         }).then(m => {
             if (args[0]) message.channel.messages.fetch(args[0]).then(oldM => oldM.unpin());
             message.delete();
@@ -146,13 +147,11 @@ bot.on("message", async message => {//requires ops team role
         })
     }
 
-
 })
 
 bot.on("guildMemberUpdate", (o, n) => {//Removes roles if you dont have any allowedRoles
 
     let check1 = config.allowedRoles.some(r => o.roles.cache.has(r));//checks if old member had any of the allowedRoles
-
 
     let check2 = !config.allowedRoles.some(r => n.roles.cache.has(r));//checks if new member doesnt have any of the allowedRoles.
 
@@ -168,5 +167,8 @@ bot.on("guildMemberUpdate", (o, n) => {//Removes roles if you dont have any allo
     }
 })
 
+// bot.on("messageCreate", async (message) => {
+// 	console.log("message");
+// });
 
 bot.login(config.token);
