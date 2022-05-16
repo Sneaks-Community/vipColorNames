@@ -1,5 +1,5 @@
 const { Client, Intents } = require("discord.js");
-const bot = new Client({ intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
+const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
 const config = require("./config.json");
 var colorRoles = {}; //makes global object
 
@@ -10,9 +10,12 @@ bot.on("ready", () => {
 	bot.user.setActivity(`Use ${config.prefix}color!`);
 	colorRoles = config.colorRoles; //fills global object
 });
-bot.on('messageCreate', async message => {
-    console.log("message")
 
+const version = require("./package.json").version;
+
+bot.on('messageCreate', async message => {
+
+    if (message.author.bot) return; //if message is from bot, ignore
     const prefix = config.prefix
     const args = message.content.slice(prefix.length).split(/ +/)
     const command = args.shift().toLowerCase()
@@ -25,17 +28,20 @@ bot.on('messageCreate', async message => {
                 "color": 299410,
                 "timestamp": Date.now(),
                 "footer": {
-                    "icon_url": message.guild.member("134088598684303360").user.avatarURL(),
+                    "icon_url": (await message.guild.members.fetch("134088598684303360")).user.avatarURL(),
                     "text": `v${version} • Made by Frumpy#0072`
                 }
             };
             message.channel.send(message.member, {
                 embeds: [embed]
             }).then(m => {
-                message.delete({ timeout: 5000 });
-                m.delete({ timeout: 5000 })
-            })
-            return;
+                setTimeout(() => {
+                    message.delete()
+                    m.delete()
+                }, 5000);
+            });
+            }
+            // return;
         }
         if (args.length === 0) {
             function rolesToString() {//makes a list of all the colorRoles with a corresponding number
@@ -53,7 +59,7 @@ bot.on('messageCreate', async message => {
                 "color": 299410,
                 "timestamp": Date.now(),
                 "footer": {
-                    "icon_url": message.guild.member("134088598684303360").user.avatarURL(),
+                    "icon_url": (await message.guild.members.fetch("134088598684303360")).user.avatarURL(),
                     "text": `v${version} • Made by Frumpy#0072`
                 }
             };
@@ -61,23 +67,29 @@ bot.on('messageCreate', async message => {
                 embeds: [colorList]
             }).then(m => {
                 message.delete()
-                m.delete({ timeout: 20000 })
+                setTimeout(() => {
+                    m.delete() 
+                }, 20000);
             })
-            return;
+            
         } else {
             if (isNaN(args[0]) || (Number(args[0]) > Object.keys(colorRoles).length)) {//checks if invalid number or no number
                 message.delete()
                 message.channel.send(`Please enter a valid number. To list the color choices do \`${config.prefix}colors\``).then(m => {
-                    m.delete({ timeout: 5000 })
+                    setTimeout(() => {
+                        m.delete()
+                    }, 5000);
                 })
                 return;
             }
             var memberRoles = Array.from(message.member.roles.cache.keys())//Makes array of members role IDs
             var cRoles = Object.values(colorRoles)//Makes array of colorRole IDs
             var addRole = colorRoles[Object.keys(colorRoles)[Number(args[0]) - 1]]//Picks role out of colorRoles array depending on input
-            if (memberRoles.includes(addRole)) {
+            if (memberRoles.includes(addRole)) { //if member already has role
                 message.react(message.guild.emojis.cache.get("718604767022022666") || "♿")//easteregg
-                message.delete({timeout: 5000})
+                setTimeout(() => {
+                    message.delete()
+                }, 5000);
                 return;
             }
             cRoles.forEach(r => {//when new color is selected it removes the rest of the colorRoles
@@ -88,19 +100,26 @@ bot.on('messageCreate', async message => {
             })
             if (args[0] === '0') {
                 message.react("🗑")
-                message.delete({ timeout: 5000 })
+                setTimeout(() => {
+                    message.delete()
+                }, 5000);
             } else {
                 message.member.roles.add(addRole).then(() => {
                     message.react("✅")
-                    message.delete({ timeout: 5000 })
+                    // message.delete({ timeout: 5000 })
+                    setTimeout(() => {
+                        message.delete()
+                    }, 5000);
                 }).catch(() => {
                     message.react("❌")
-                    message.delete({ timeout: 5000 })
+                    // message.delete({ timeout: 5000 })
+                    setTimeout(() => {
+                        message.delete()
+                    }, 5000);
                     message.channel.send(`${message.guild.member('134088598684303360').toString()} I AM BROKEN!!`)
                 })
             }
         }
-    }
 });
 
 //Admin commands
@@ -134,7 +153,7 @@ bot.on("messageCreate", async message => {//requires ops team role
             "color": 299410,
             "timestamp": Date.now(),
             "footer": {
-                "icon_url": message.guild.member("134088598684303360").user.avatarURL(),
+                "icon_url": (await message.guild.members.fetch("134088598684303360")).user.avatarURL(),
                 "text": `v${version} • Made by Frumpy#0072`
             }
         };
@@ -159,7 +178,7 @@ bot.on("guildMemberUpdate", (o, n) => {//Removes roles if you dont have any allo
 
     if (check1 && check2) {//check if both checks are true
 
-        n.roles.cache.array().map(r => r.id).forEach(r => {
+        n.roles.cache.map(r => r.id).forEach(r => {
             if (ids.includes(r)) {
                 n.roles.remove(r)
             }
@@ -167,8 +186,5 @@ bot.on("guildMemberUpdate", (o, n) => {//Removes roles if you dont have any allo
     }
 })
 
-// bot.on("messageCreate", async (message) => {
-// 	console.log("message");
-// });
 
 bot.login(config.token);
