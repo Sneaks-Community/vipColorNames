@@ -6,9 +6,9 @@ var colorRoles = {}; //makes global object
 // const version = require('./package.json').version;
 
 bot.on("ready", () => {
-	console.log(`Logged in as ${bot.user.tag}!`);
-	bot.user.setActivity(`Use ${config.prefix}color!`);
-	colorRoles = config.colorRoles; //fills global object
+    console.log(`Logged in as ${bot.user.tag}!`);
+    bot.user.setActivity(`Use ${config.prefix}color!`);
+    colorRoles = config.colorRoles; //fills global object
 });
 
 const version = require("./package.json").version;
@@ -21,8 +21,8 @@ bot.on('messageCreate', async message => {
     const command = args.shift().toLowerCase()
     if (!message.content.startsWith(prefix)) return;
 
-    if (command === 'color' || command === 'colors' || command == "colour" || command == "colours") {
-        if (!config.allowedRoles.some(r => message.member.roles.cache.has(r))) {//if you dont have any allowedRoles
+    if (['color', 'colors', 'colour', 'colours'].includes(command)) {
+        if (!config.allowedRoles.some(role => message.member.roles.cache.has(role))) {
             const embed = {
                 "description": "Sorry, this command is for VIPs and Nitro Boosters only. To get vip today visit [here](https://www.snksrv.com/donate).",
                 "color": 299410,
@@ -32,28 +32,16 @@ bot.on('messageCreate', async message => {
                     "text": `v${version} • Made by Frumpy#0072`
                 }
             };
-            message.channel.send(message.member, {
-                embeds: [embed]
-            }).then(m => {
-                setTimeout(() => {
-                    message.delete()
-                    m.delete()
-                }, 5000);
-            });
-            }
-            // return;
+            message.channel.send(message.member, { embeds: [embed] })
+                .then(msg => setTimeout(() => { message.delete(); msg.delete(); }, 5000));
+            return;
         }
-        if (args.length === 0) {
-            function rolesToString() {//makes a list of all the colorRoles with a corresponding number
-                var list = '0: Reset Color\n';
-                var num = 1
-                Object.keys(colorRoles).forEach(i => {
-                    list += (num + ": " + message.guild.roles.cache.get(colorRoles[i]).toString() + "\n")
-                    num++
-                })
-                return list;
-            }
-            var roleString = await rolesToString()
+
+        const roleString = args.length === 0
+            ? Object.values(colorRoles).reduce((list, roleId, idx) => list + `${idx + 1}: ${message.guild.roles.cache.get(roleId)}\n`, '0: Reset Color\n')
+            : null;
+
+        if (roleString) {
             const colorList = {
                 "description": `Please select a color from the list below.\n\n${roleString}\nTo set a color please use \`${config.prefix}color <Color Number>\``,
                 "color": 299410,
@@ -63,63 +51,44 @@ bot.on('messageCreate', async message => {
                     "text": `v${version} • Made by Frumpy#0072`
                 }
             };
-            message.channel.send({
-                embeds: [colorList]
-            }).then(m => {
-                message.delete()
-                setTimeout(() => {
-                    m.delete() 
-                }, 20000);
-            })
-            
+            message.channel.send({ embeds: [colorList] })
+                .then(msg => { message.delete(); setTimeout(() => msg.delete(), 20000); });
         } else {
-            if (isNaN(args[0]) || (Number(args[0]) > Object.keys(colorRoles).length)) {//checks if invalid number or no number
-                message.delete()
-                message.channel.send(`Please enter a valid number. To list the color choices do \`${config.prefix}colors\``).then(m => {
-                    setTimeout(() => {
-                        m.delete()
-                    }, 5000);
-                })
+            const index = Number(args[0]) - 1;
+            const colorRolesArray = Object.values(colorRoles);
+            if (isNaN(args[0]) || index >= colorRolesArray.length) {
+                message.delete();
+                message.channel.send(`Please enter a valid number. To list the color choices do \`${config.prefix}colors\``)
+                    .then(msg => setTimeout(() => msg.delete(), 5000));
                 return;
             }
-            var memberRoles = Array.from(message.member.roles.cache.keys())//Makes array of members role IDs
-            var cRoles = Object.values(colorRoles)//Makes array of colorRole IDs
-            var addRole = colorRoles[Object.keys(colorRoles)[Number(args[0]) - 1]]//Picks role out of colorRoles array depending on input
-            if (memberRoles.includes(addRole)) { //if member already has role
-                message.react(message.guild.emojis.cache.get("718604767022022666") || "♿")//easteregg
-                setTimeout(() => {
-                    message.delete()
-                }, 5000);
+
+            const memberRoles = message.member.roles.cache;
+            const addRole = colorRolesArray[index];
+
+            if (memberRoles.has(addRole)) {
+                message.react(message.guild.emojis.cache.get("718604767022022666") || "♿");
+                setTimeout(() => message.delete(), 5000);
                 return;
             }
-            cRoles.forEach(r => {//when new color is selected it removes the rest of the colorRoles
-                r = message.guild.roles.cache.get(r)
-                if (memberRoles.includes(r.id)) {
-                    message.member.roles.remove(r.id)
-                }
-            })
+
+            colorRolesArray.forEach(roleId => memberRoles.has(roleId) && message.member.roles.remove(roleId));
+
             if (args[0] === '0') {
-                message.react("🗑")
-                setTimeout(() => {
-                    message.delete()
-                }, 5000);
+                message.react("🗑");
+                setTimeout(() => message.delete(), 5000);
             } else {
-                message.member.roles.add(addRole).then(() => {
-                    message.react("✅")
-                    // message.delete({ timeout: 5000 })
-                    setTimeout(() => {
-                        message.delete()
-                    }, 5000);
-                }).catch(() => {
-                    message.react("❌")
-                    // message.delete({ timeout: 5000 })
-                    setTimeout(() => {
-                        message.delete()
-                    }, 5000);
-                    message.channel.send(`${message.guild.member('134088598684303360').toString()} I AM BROKEN!!`)
-                })
+                message.member.roles.add(addRole)
+                    .then(() => { message.react("✅"); setTimeout(() => message.delete(), 5000); })
+                    .catch(() => {
+                        message.react("❌");
+                        setTimeout(() => message.delete(), 5000);
+                        message.channel.send(`${message.guild.member('134088598684303360')} I AM BROKEN!!`);
+                    });
             }
         }
+    }
+
 });
 
 //Admin commands
@@ -168,23 +137,27 @@ bot.on("messageCreate", async message => {//requires ops team role
 
 })
 
-bot.on("guildMemberUpdate", (o, n) => {//Removes roles if you dont have any allowedRoles
+// Event handler for when a guild member's roles are updated
+bot.on("guildMemberUpdate", (oldMember, newMember) => {
+    // Check if the old member had any of the allowedRoles
+    let hadAllowedRole = config.allowedRoles.some(role => oldMember.roles.cache.has(role));
 
-    let check1 = config.allowedRoles.some(r => o.roles.cache.has(r));//checks if old member had any of the allowedRoles
+    // Check if the new member doesn't have any of the allowedRoles
+    let lacksAllowedRole = !config.allowedRoles.some(role => newMember.roles.cache.has(role));
 
-    let check2 = !config.allowedRoles.some(r => n.roles.cache.has(r));//checks if new member doesnt have any of the allowedRoles.
+    // Get an array of color role IDs
+    let colorRoleIds = Object.values(colorRoles);
 
-    let ids = Object.values(colorRoles);
-
-    if (check1 && check2) {//check if both checks are true
-
-        n.roles.cache.map(r => r.id).forEach(r => {
-            if (ids.includes(r)) {
-                n.roles.remove(r)
+    // If the member had an allowed role and now lacks one, remove any color roles they had
+    if (hadAllowedRole && lacksAllowedRole) {
+        // Iterate through the member's role IDs and remove any color roles
+        newMember.roles.cache.map(role => role.id).forEach(roleId => {
+            if (colorRoleIds.includes(roleId)) {
+                newMember.roles.remove(roleId);
             }
-        })
+        });
     }
-})
+});
 
 
 bot.login(config.token);
